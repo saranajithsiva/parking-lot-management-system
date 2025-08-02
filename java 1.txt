@@ -1,0 +1,114 @@
+import java.time.*;
+import java.util.*;
+
+class Vehicle {
+    String number;
+    LocalDateTime entryTime;
+    int slot;
+
+    Vehicle(String number, int slot) {
+        this.number = number;
+        this.slot = slot;
+        this.entryTime = LocalDateTime.now(); // Entry time captured
+    }
+}
+
+public class ParkingLotSystem {
+    static final int TOTAL_SLOTS = 5; // Total slots available
+    static Map<Integer, Vehicle> slots = new HashMap<>();
+    static Scanner sc = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        System.out.println("🚗 Welcome to the Parking Lot System 🚗");
+        while (true) {
+            System.out.println("\n--- Parking Menu ---");
+            System.out.println("1. Park Vehicle");
+            System.out.println("2. Remove Vehicle");
+            System.out.println("3. View Slot Status");
+            System.out.println("4. Exit");
+            System.out.print("Choose an option: ");
+            int choice = sc.nextInt();
+            sc.nextLine(); // clear input buffer
+
+            switch (choice) {
+                case 1 -> parkVehicle();
+                case 2 -> removeVehicle();
+                case 3 -> showSlotStatus();
+                case 4 -> {
+                    System.out.println("Exiting system. Thank you!");
+                    return;
+                }
+                default -> System.out.println("❌ Invalid choice. Try again.");
+            }
+        }
+    }
+
+    static void parkVehicle() {
+        if (slots.size() >= TOTAL_SLOTS) {
+            System.out.println("🚫 Parking Full. No free slots.");
+            return;
+        }
+
+        System.out.print("Enter vehicle number: ");
+        String vehicleNumber = sc.nextLine();
+
+        int freeSlot = findFreeSlot();
+        Vehicle vehicle = new Vehicle(vehicleNumber, freeSlot);
+        slots.put(freeSlot, vehicle);
+
+        System.out.println("✅ Vehicle parked at slot " + freeSlot + " at " + vehicle.entryTime);
+    }
+
+    static void removeVehicle() {
+        System.out.print("Enter slot number to remove vehicle: ");
+        int slot = sc.nextInt();
+        sc.nextLine();
+
+        if (!slots.containsKey(slot)) {
+            System.out.println("⚠ Slot is already empty.");
+            return;
+        }
+
+        Vehicle vehicle = slots.get(slot);
+        LocalDateTime exitTime = LocalDateTime.now();
+        Duration duration = Duration.between(vehicle.entryTime, exitTime);
+        long minutesParked = duration.toMinutes();
+
+        // Pricing logic: ₹10 minimum charge + ₹0.5/minute
+        double fee = Math.max(10, minutesParked * 0.5);
+
+        System.out.println("🚘 Vehicle Removed");
+        System.out.println("Vehicle Number: " + vehicle.number);
+        System.out.println("Parked Time: " + vehicle.entryTime);
+        System.out.println("Exit Time: " + exitTime);
+        System.out.println("Duration: " + minutesParked + " minutes");
+        System.out.println("💰 Parking Fee: ₹" + fee);
+        System.out.println("🟢 Slot " + slot + " is now empty.");
+
+        slots.remove(slot);
+    }
+
+    static void showSlotStatus() {
+        System.out.println("\n📋 Slot Status:");
+        System.out.println("Total Slots: " + TOTAL_SLOTS);
+        System.out.println("Filled Slots: " + slots.size());
+        System.out.println("Free Slots: " + (TOTAL_SLOTS - slots.size()));
+        System.out.println("---------------------------");
+
+        for (int i = 1; i <= TOTAL_SLOTS; i++) {
+            if (slots.containsKey(i)) {
+                Vehicle v = slots.get(i);
+                System.out.println("Slot " + i + ": " + v.number + " (In at: " + v.entryTime + ")");
+            } else {
+                System.out.println("Slot " + i + ": [Empty]");
+            }
+        }
+    }
+
+    static int findFreeSlot() {
+        for (int i = 1; i <= TOTAL_SLOTS; i++) {
+            if (!slots.containsKey(i)) return i;
+        }
+        return -1;
+    } 
+} give the code as file to uplode in github
