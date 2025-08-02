@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Parking Lot Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #eef2f5;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .status {
+            margin: 20px 0;
+            font-size: 18px;
+        }
+        .slots-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .slot {
+            width: 120px;
+            height: 80px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+        }
+        .free {
+            background-color: #4caf50;
+        }
+        .filled {
+            background-color: #f44336;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        input, select, button {
+            padding: 10px;
+            margin: 5px;
+        }
+        button {
+            background-color: #007bff;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #message {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🚗 Parking Lot System</h1>
+
+<div class="status">
+    <p>Total Slots: <span id="totalSlots">5</span></p>
+    <p>Filled Slots: <span id="filledSlots">0</span></p>
+    <p>Free Slots: <span id="freeSlots">5</span></p>
+</div>
+
+<div class="slots-container" id="slotsDisplay"></div>
+
+<div class="controls">
+    <input type="text" id="vehicleNumber" placeholder="Vehicle Number" />
+    <button onclick="parkVehicle()">Park Vehicle</button>
+    <select id="removeSlot">
+        <option value="">Select Slot to Remove</option>
+    </select>
+    <button onclick="removeVehicle()">Remove Vehicle</button>
+</div>
+
+<div id="message"></div>
+
+<script>
+    const TOTAL_SLOTS = 5;
+    const slots = {};
+
+    function updateDisplay() {
+        const slotsDiv = document.getElementById("slotsDisplay");
+        const removeSelect = document.getElementById("removeSlot");
+        slotsDiv.innerHTML = "";
+        removeSelect.innerHTML = '<option value="">Select Slot to Remove</option>';
+
+        let filledCount = 0;
+        for (let i = 1; i <= TOTAL_SLOTS; i++) {
+            const slot = document.createElement("div");
+            slot.classList.add("slot");
+
+            if (slots[i]) {
+                slot.classList.add("filled");
+                slot.innerHTML = Slot ${i}<br>${slots[i].number};
+                removeSelect.innerHTML += <option value="${i}">Slot ${i}</option>;
+                filledCount++;
+            } else {
+                slot.classList.add("free");
+                slot.innerHTML = Slot ${i}<br>Empty;
+            }
+
+            slotsDiv.appendChild(slot);
+        }
+
+        document.getElementById("filledSlots").textContent = filledCount;
+        document.getElementById("freeSlots").textContent = TOTAL_SLOTS - filledCount;
+    }
+
+    function parkVehicle() {
+        const number = document.getElementById("vehicleNumber").value.trim();
+        const messageDiv = document.getElementById("message");
+
+        if (!number) {
+            messageDiv.textContent = "❌ Please enter vehicle number.";
+            return;
+        }
+
+        if (Object.keys(slots).length >= TOTAL_SLOTS) {
+            messageDiv.textContent = "🚫 Parking Full.";
+            return;
+        }
+
+        for (let i = 1; i <= TOTAL_SLOTS; i++) {
+            if (!slots[i]) {
+                slots[i] = {
+                    number: number,
+                    entryTime: new Date()
+                };
+                messageDiv.textContent = ✅ Vehicle parked at slot ${i};
+                document.getElementById("vehicleNumber").value = "";
+                updateDisplay();
+                return;
+            }
+        }
+    }
+
+    function removeVehicle() {
+        const slotNumber = parseInt(document.getElementById("removeSlot").value);
+        const messageDiv = document.getElementById("message");
+
+        if (!slotNumber || !slots[slotNumber]) {
+            messageDiv.textContent = "⚠ Slot is empty or not selected.";
+            return;
+        }
+
+        const entry = slots[slotNumber];
+        const now = new Date();
+        const durationMin = Math.floor((now - entry.entryTime) / 60000);
+        const cost = Math.max(10, durationMin * 0.5);
+
+        messageDiv.textContent = 🚘 Vehicle ${entry.number} removed from slot ${slotNumber}. Duration: ${durationMin} mins. Fee: ₹${cost.toFixed(2)};
+
+        delete slots[slotNumber];
+        updateDisplay();
+    }
+
+    // Initial render
+    updateDisplay();
+</script>
+
+</body>
+</html>
